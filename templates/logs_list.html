@@ -1,0 +1,141 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<!-- Tab Navigation -->
+<ul class="nav nav-tabs">
+   <li class="nav-item">
+      <a class="nav-link active" data-toggle="tab" href="#logs">Logs</a>
+   </li>
+   <li class="nav-item">
+      <a class="nav-link" data-toggle="tab" href="#visualization">Visualization</a>
+   </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content">
+   <!-- Logs Tab -->
+   <div id="logs" class="container tab-pane active"><br>
+      <!-- Sorting and Searching Section -->
+
+      <div class="mt-4">
+         <form method="GET" action="/fetch_logs">
+            <div class="form-row align-items-center">
+               <!-- Search Field -->
+               <div class="col-auto">
+                  <input type="text" class="form-control mb-2" placeholder="Search logs" name="search">
+               </div>
+               <!-- Sorting Dropdown -->
+               <div class="col-auto">
+                  <select class="form-control mb-2" name="sort">
+                     <option value="asc">Date Ascending</option>
+                     <option value="desc">Date Descending</option>
+                  </select>
+               </div>
+               <!-- Submit Button -->
+               <div class="col-auto">
+                  <button type="submit" class="btn btn-primary mb-2">Apply</button>
+               </div>
+            </div>
+         </form>
+      </div>
+
+      <!-- Logs display section -->
+      <div class="mt-4">
+         <h2 class="text-center">Log Entries</h2>
+         <table class="table table-striped">
+            <thead>
+               <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Timestamp</th> <!-- Added Timestamp Header -->
+                  <th scope="col">Log Message</th>
+                  <th scope="col">Severity</th>
+                  <!-- Add more columns as needed -->
+               </tr>
+            </thead>
+            <tbody>
+               {% for log in logs %}
+               <tr>
+                  <th scope="row">{{ loop.index }}</th>
+                  <td>{{ log.date }}</td>
+                  <td>{{ log.timestamp }}</td>
+                  <td>{{ log.message }}</td>
+                  <td>{{ log.severity }}</td>
+               </tr>
+               {% else %}
+               <tr>
+                  <td colspan="5" class="text-center">No logs found</td>
+               </tr>
+               {% endfor %}
+            </tbody>
+         </table>
+      </div>
+   </div>
+
+   <!-- Visualization Tab -->
+   <div id="visualization" class="container tab-pane fade"><br>
+      <!-- Include Chart.js -->
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+      <!-- Chart Container -->
+      <div class="chart-container" style="position: relative; height:40vh; width:60vw">
+         <canvas id="logChart"></canvas>
+      </div>
+
+      <script type="text/javascript">
+         var stirngData = JSON.stringify({{ data | tojson | safe }})
+         var data = JSON.parse(stirngData)
+         var ctx = document.getElementById('logChart').getContext('2d');
+         var logChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+               labels: data.labels,
+               datasets: [{
+                  label: 'Logs Over Time',
+                  data: data.values,
+                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                  borderColor: 'rgba(75, 192, 192, 1)',
+                  borderWidth: 2,
+                  pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                  pointBorderColor: '#fff',
+                  pointHoverBackgroundColor: '#fff',
+                  pointHoverBorderColor: 'rgba(75, 192, 192, 1)'
+               }]
+
+            },
+            options: {
+               responsive: true,
+               maintainAspectRatio: false,
+               plugins: {
+                  title: {
+                     display: true,
+                     text: 'Logs Over time'
+                  },
+               },
+               interaction: {
+                  mode: 'index',
+                  intersect: false
+               },
+               scales: {
+                  x: {
+                     display: true,
+                     title: {
+                        display: true,
+                        text: 'Time Stamp'
+                     }
+                  },
+                  y: {
+                     display: true,
+                     title: {
+                        display: true,
+                        text: 'No. of Logs'
+                     }
+                  }
+               }
+            },
+
+         });
+      </script>
+   </div>
+</div>
+{% endblock %}
